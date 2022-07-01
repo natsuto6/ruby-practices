@@ -2,17 +2,14 @@
 # frozen_string_literal: true
 
 scores = ARGV[0].split(',')
-shots = []
 
-while scores.any?
-  shot = scores.shift
-  if shot == 'X' && shots.size < 18
+shots = []
+scores.each do |score|
+  if score == 'X'
     shots << 10
     shots << 0
-  elsif shot == 'X'
-    shots << 10
   else
-    shots << shot.to_i
+    shots << score.to_i
   end
 end
 
@@ -21,26 +18,16 @@ shots.each_slice(2) do |s|
   frames << s
 end
 
-frames[-2].push frames.pop[0] if frames[-1].size == 1
-
 point = 0
-9.times do |i|
-  point +=  if frames[i][0] == 10
-              if frames[i + 1][0] == 10
-                if i < 8
-                  frames[i].sum + frames[i + 1][0] + frames[i + 2][0]
-                else
-                  frames[i].sum + frames[i + 1][0] + frames[i + 1][1]
-                end
-              else
-                frames[i].sum + frames[i + 1][0] + frames[i + 1][1]
-              end
-            elsif frames[i].sum == 10
-              frames[i].sum + frames[i + 1][0]
-            else
-              frames[i].sum
-            end
+frames.each_with_index do |frame, i|
+  if i < 9 && frame[0] == 10
+    point += 10 + frames[i + 1].sum
+    point += frames[i + 2][0] if frames[i + 1][0] == 10
+  elsif i < 9 && frame.sum == 10
+    point += 10 + frames[i + 1][0]
+  else
+    point += frame.sum
+  end
 end
 
-point += frames[9].sum
 puts point
