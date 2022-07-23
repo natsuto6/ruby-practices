@@ -1,15 +1,15 @@
-#!/usr/bin/env ruby
+# !/usr/bin/env ruby
 # frozen_string_literal: true
 
 require 'find'
 
 lists = []
-def find_lists(dir, files)
-  Find.find(dir) do |file|
+def find_lists(current_dir, lists)
+  Find.find(current_dir) do |file|
     file_name = File.basename(file)
-    next if File.basename(dir) == file_name || /^\./ =~ file_name
+    next if File.basename(current_dir) == file_name || /^\./ =~ file_name
 
-    files << case File.ftype(file)
+    lists << case File.ftype(file)
              when 'directory', 'file'
                file_name
              end
@@ -17,7 +17,7 @@ def find_lists(dir, files)
 end
 
 def display_lists(lists, column)
-  each_column = lists.length / column + 1
+  each_column = lists.length < column ? 1 : lists.length / column
   0.upto(each_column).each_with_index do |line, idx|
     lists.each_slice(each_column) do |columns|
       print columns[line].ljust(16) if columns [line]
