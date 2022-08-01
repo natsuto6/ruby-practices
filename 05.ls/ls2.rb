@@ -12,7 +12,7 @@ def find_lists(params)
   if params[:a].nil?
     Dir.glob('*')
   else
-    Dir.glob('*', File::FNM_DOTMATCH)
+    Dir.entries('.').sort
   end
 end
 
