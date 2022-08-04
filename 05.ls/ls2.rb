@@ -8,12 +8,8 @@ params = {}
 opt.on('-a') { |v| params[:a] = v }
 opt.parse!(ARGV)
 
-def find_lists(params, defalt = Dir.glob('*'))
-  if params[:a].nil?
-    defalt
-  else
-    Dir.glob('*', File::FNM_DOTMATCH)
-  end
+def find_lists(params)
+  Dir.glob('*', params[:a] ? File::FNM_DOTMATCH : 0)
 end
 
 def display_lists(lists, column)
