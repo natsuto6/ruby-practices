@@ -46,9 +46,8 @@ def display_lists(lists, column)
 end
 
 def total_block_number(current_files)
-  total = []
-  current_files.map do |file|
-    total << get_file_info(file).blocks
+  total = current_files.map do |file|
+    get_file_info(file).blocks
   end
   puts "total #{total.sum}"
 end
@@ -58,30 +57,31 @@ def get_file_info(file)
 end
 
 def file_detail_display(file, files)
-  max_length = maximums(files)
+  file_stats = files.map { |f| get_file_info(f) }
+  max_length = maximums(file_stats)
 
   permission = get_permissions(file)
-  hard_link = get_hardlink(file).rjust(max_length[:hard_link])
-  user = user_name(file).rjust(max_length[:user])
-  group = group_name(file).rjust(max_length[:group])
-  file_size = get_size(file).rjust(max_length[:filesize])
-  time = files_created_time(file)
+  hard_link = File.stat(file).nlink.to_s.rjust(max_length[:hard_link])
+  user = Etc.getpwuid(File.stat(file).uid).name.rjust(max_length[:user])
+  group = Etc.getgrgid(File.stat(file).gid).name.rjust(max_length[:group])
+  file_size = File.stat(file).size.to_s.rjust(max_length[:filesize])
+  time = File.mtime(file).strftime('%m %d %H:%M')
   filename = file
 
   puts "#{permission}  #{hard_link} #{user}  #{group}  #{file_size} #{time} #{filename} "
 end
 
-def maximums(files)
+def maximums(file_stats)
   hardlinks = []
   users = []
   groups = []
   filesize = []
 
-  files.each do |file|
-    hardlinks << get_hardlink(file)
-    users << user_name(file)
-    groups << group_name(file)
-    filesize << get_size(file)
+  file_stats.each do |file|
+    hardlinks << file.nlink.to_s
+    users << Etc.getpwuid(file.uid).name
+    groups << Etc.getgrgid(file.gid).name
+    filesize << file.size.to_s
   end
 
   {
@@ -100,26 +100,6 @@ def get_permissions(file)
     PERMISSION[n.to_i]
   end.join('')
   type_of_file + permission_code
-end
-
-def get_hardlink(file)
-  get_file_info(file).nlink.to_s
-end
-
-def user_name(file)
-  Etc.getpwuid(get_file_info(file).uid).name
-end
-
-def group_name(file)
-  Etc.getgrgid(get_file_info(file).gid).name
-end
-
-def get_size(file)
-  File.size(file).to_s
-end
-
-def files_created_time(file)
-  File.mtime(file).strftime('%m %d %H:%M')
 end
 
 find_lists(params)
