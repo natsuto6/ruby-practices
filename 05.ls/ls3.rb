@@ -5,25 +5,16 @@ require 'optparse'
 require 'etc'
 
 FILE_TYPE = {
-  'fifo' => 'p',
-  'characterSpecial' => 'c',
-  'directory' => 'd',
-  'blockSpecial' => 'b',
-  'file' => '-',
-  'link' => 'l',
-  'socket' => 's'
+  '10' => 'p',
+  '20' => 'c',
+  '40' => 'd',
+  '60' => 'b',
+  '100' => '-',
+  '120' => 'l',
+  '140' => 's'
 }.freeze
 
-PERMISSION = {
-  0 => '---',
-  1 => '--x',
-  2 => '-w-',
-  3 => '-wx',
-  4 => 'r--',
-  5 => 'r-x',
-  6 => 'rw-',
-  7 => 'rwx'
-}.freeze
+PERMISSION = ['---', '--x', '-w-', '-wx', 'r--', 'r-x', 'rw-', 'rwx'].freeze
 
 opt = OptionParser.new
 params = {}
@@ -102,14 +93,13 @@ def maximums(file_stats)
 end
 
 def get_permissions(file)
-  fs = File.stat(file)
-  fs_mode = fs.mode.to_s(8)
-  print FILE_TYPE[fs.ftype]
-
-  permission_number = fs_mode.to_i.digits.take(3).reverse
-    PERMISSION[permission_number[0]] +
-    PERMISSION[permission_number[1]] +
-    PERMISSION[permission_number[2]]
+  file_stat = File.lstat(file).mode.to_s(8)
+  permission_number = file_stat[-3..]
+  type_of_file = FILE_TYPE[(file_stat[0..-4])]
+  permission_code = permission_number.chars.map do |n|
+    PERMISSION[n.to_i]
+  end.join('')
+  type_of_file + permission_code
 end
 
 find_lists(params)
