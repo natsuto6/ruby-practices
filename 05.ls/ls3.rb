@@ -18,12 +18,13 @@ PERMISSION = ['---', '--x', '-w-', '-wx', 'r--', 'r-x', 'rw-', 'rwx'].freeze
 
 opt = OptionParser.new
 params = {}
+opt.on('-a') { |v| params[:a] = v }
 opt.on('-r') { |v| params[:r] = v }
 opt.on('-l') { |v| params[:l] = v }
 opt.parse!(ARGV)
 
 def find_lists(params)
-  current_files = Dir.glob('*')
+  current_files = Dir.glob('*', params[:a] ? File::FNM_DOTMATCH : 0)
   params[:r] ? current_files.reverse! : current_files
   if params[:l]
     total_block_number(current_files)
