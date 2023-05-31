@@ -33,7 +33,7 @@ class FileInfo
     stat.size
   end
 
-  def mtime_formatted
+  def mtime
     File.mtime(file)
   end
 end
