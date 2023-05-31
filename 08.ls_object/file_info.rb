@@ -17,23 +17,23 @@ class FileInfo
     FilePermission.new(file).format_permissions
   end
 
-  def hard_link_length
-    stat.nlink.to_s.length
+  def hard_link
+    stat.nlink
   end
 
-  def user_length
-    Etc.getpwuid(stat.uid).name.length
+  def user
+    Etc.getpwuid(stat.uid).name
   end
 
-  def group_length
-    Etc.getgrgid(stat.gid).name.length
+  def group
+    Etc.getgrgid(stat.gid).name
   end
 
-  def file_size_length
-    stat.size.to_s.length
+  def filesize
+    stat.size
   end
 
   def mtime_formatted
-    File.mtime(file).strftime('%m %d %H:%M')
+    File.mtime(file)
   end
 end

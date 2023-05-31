@@ -6,7 +6,8 @@ class FileList
   end
 
   def display_lists
-    current_files = Dir.glob('*', @params[:a] ? File::FNM_DOTMATCH : 0)
+    file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
+    current_files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
     @params[:r] ? current_files.reverse! : current_files
     if @params[:l]
       total_block_number(current_files)
@@ -19,40 +20,40 @@ class FileList
   private
 
   def display_lists_simple(lists, column)
+    max_filename_length = lists.map { |file_info| file_info.file.length }.max
     line_count = (lists.length.to_f / column).ceil
     line_count.times do |line|
       lists.each_slice(line_count) do |columns|
-        print columns[line]&.ljust(16)
+        print columns[line].file&.ljust(max_filename_length + 2)
       end
       print "\n"
     end
   end
 
   def total_block_number(current_files)
-    total = current_files.map { |file| FileInfo.new(file).stat.blocks }
+    total = current_files.map { |file| file.stat.blocks }
     puts "total #{total.sum}"
   end
 
   def display_file_details(file, files)
-    file_info = FileInfo.new(file)
     max_length = maximums(files)
-    permission = file_info.permissions
-    hard_link = file_info.hard_link_length.to_s.rjust(max_length[:hard_link])
-    user = Etc.getpwuid(File.stat(file).uid).name.rjust(max_length[:user])
-    group = Etc.getgrgid(File.stat(file).gid).name.rjust(max_length[:group])
-    file_size = File.stat(file).size.to_s.rjust(max_length[:filesize])
-    time = file_info.mtime_formatted
-    filename = file
+    permission = file.permissions
+    hard_link = file.hard_link.to_s.rjust(max_length[:hard_link])
+    user = file.user.rjust(max_length[:user])
+    group = file.group.rjust(max_length[:group])
+    file_size = file.filesize.to_s.rjust(max_length[:filesize])
+    time = file.mtime.strftime('%m %d %H:%M')
+    filename = file.file
     puts "#{permission}  #{hard_link} #{user}  #{group}  #{file_size} #{time} #{filename} "
   end
 
   def maximums(file_stats)
     lengths_list = file_stats.map do |file|
       {
-        hard_link: FileInfo.new(file).hard_link_length,
-        user: Etc.getpwuid(File.stat(file).uid).name.length,
-        group: Etc.getgrgid(File.stat(file).gid).name.length,
-        filesize: File.stat(file).size.to_s.length
+        hard_link: file.hard_link.to_s.length,
+        user: file.user.length,
+        group: file.group.length,
+        filesize: file.filesize.to_s.length
       }
     end
 
