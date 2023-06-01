@@ -8,10 +8,10 @@ class FileList
   def display_lists
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
     current_files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
-    @params[:r] ? current_files.reverse! : current_files
+    @params[:r] ? current_files.reverse : current_files
     if @params[:l]
       total_block_number(current_files)
-      current_files.each { |file| display_file_details(file, current_files) }
+      current_files.each { |file_info| display_file_details(file_info, current_files) }
     else
       display_lists_simple(current_files, 3)
     end
@@ -31,23 +31,23 @@ class FileList
   end
 
   def total_block_number(current_files)
-    total = current_files.map { |file| file.stat.blocks }
-    puts "total #{total.sum}"
+    total = current_files.sum { |file| file.stat.blocks }
+    puts "total #{total}"
   end
 
-  def display_file_details(file, files)
-    max_length = maximums(files)
-    permission = file.permissions
-    hard_link = file.hard_link.to_s.rjust(max_length[:hard_link])
-    user = file.user.rjust(max_length[:user])
-    group = file.group.rjust(max_length[:group])
-    file_size = file.filesize.to_s.rjust(max_length[:filesize])
-    time = file.mtime.strftime('%m %d %H:%M')
-    filename = file.file
-    puts "#{permission}  #{hard_link} #{user}  #{group}  #{file_size} #{time} #{filename} "
+  def display_file_details(file_info, files)
+    max_lengths = calculate_maximum_lengths(files)
+    permissions = file_info.permissions
+    hard_link = file_info.hard_link.to_s.rjust(max_lengths[:hard_link])
+    user = file_info.user.rjust(max_lengths[:user])
+    group = file_info.group.rjust(max_lengths[:group])
+    filesize = file_info.filesize.to_s.rjust(max_lengths[:filesize])
+    time = file_info.mtime.strftime('%m %d %H:%M')
+    filename = file_info.file
+    puts "#{permissions}  #{hard_link} #{user}  #{group}  #{filesize} #{time} #{filename} "
   end
 
-  def maximums(file_stats)
+  def calculate_maximum_lengths(file_stats)
     lengths_list = file_stats.map do |file|
       {
         hard_link: file.hard_link.to_s.length,
