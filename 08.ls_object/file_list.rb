@@ -29,7 +29,8 @@ class FileList
 
   def display_lists_detailed(current_files)
     total_block_number(current_files)
-    current_files.each { |file_info| display_file_details(file_info, current_files) }
+    max_lengths = calculate_maximum_lengths(current_files)
+    current_files.each { |file_info| display_file_details(file_info, max_lengths) }
   end
 
   def total_block_number(current_files)
@@ -37,8 +38,7 @@ class FileList
     puts "total #{total}"
   end
 
-  def display_file_details(file_info, files)
-    max_lengths = calculate_maximum_lengths(files)
+  def display_file_details(file_info, max_lengths)
     permissions = file_info.permissions
     hard_link = file_info.hard_link.to_s.rjust(max_lengths[:hard_link])
     user = file_info.user.rjust(max_lengths[:user])
