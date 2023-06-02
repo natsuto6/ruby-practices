@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class FileList
+  COLUMNS = 3
+
   def initialize(params)
     @params = params
   end
@@ -9,12 +11,7 @@ class FileList
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
     current_files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
     @params[:r] ? current_files.reverse : current_files
-    if @params[:l]
-      total_block_number(current_files)
-      current_files.each { |file_info| display_file_details(file_info, current_files) }
-    else
-      display_lists_simple(current_files, 3)
-    end
+    @params[:l] ? display_lists_detailed(current_files) : display_lists_simple(current_files, COLUMNS)
   end
 
   private
@@ -28,6 +25,11 @@ class FileList
       end
       print "\n"
     end
+  end
+
+  def display_lists_detailed(current_files)
+    total_block_number(current_files)
+    current_files.each { |file_info| display_file_details(file_info, current_files) }
   end
 
   def total_block_number(current_files)
@@ -57,7 +59,8 @@ class FileList
       }
     end
 
-    lengths_list.each_with_object({ hard_link: 0, user: 0, group: 0, filesize: 0 }) do |lengths_hash, max_lengths|
+    default_lengths = Hash.new(0)
+    lengths_list.each_with_object(default_lengths) do |lengths_hash, max_lengths|
       lengths_hash.each do |key, value|
         max_lengths[key] = [max_lengths[key] || 0, value].max
       end

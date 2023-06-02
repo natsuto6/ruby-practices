@@ -2,6 +2,7 @@
 
 class FilePermission
   PERMISSIONS = ['---', '--x', '-w-', '-wx', 'r--', 'r-x', 'rw-', 'rwx'].freeze
+
   FILE_TYPE = {
     '10' => 'p',
     '20' => 'c',
@@ -29,7 +30,7 @@ class FilePermission
   end
 
   def permission_code
-    permission_numbers.map { |n| PERMISSIONS[n] }.join('')
+    permission_numbers.map { |n| PERMISSIONS[n] }.join
   end
 
   def file_mode
