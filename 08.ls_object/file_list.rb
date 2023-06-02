@@ -10,7 +10,7 @@ class FileList
   def display_lists
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
     current_files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
-    @params[:r] ? current_files.reverse : current_files
+    current_files = current_files.reverse if @params[:r]
     @params[:l] ? display_lists_detailed(current_files) : display_lists_simple(current_files, COLUMNS)
   end
 
