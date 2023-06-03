@@ -9,14 +9,14 @@ class FileList
 
   def display_lists
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
-    current_files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
-    current_files = current_files.reverse if @params[:r]
-    @params[:l] ? display_lists_detailed(current_files) : display_lists_simple(current_files, COLUMNS)
+    files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
+    current_files = @params[:r] ? files.reverse : files
+    @params[:l] ? display_lists_long_format(current_files) : display_simple_lists(current_files, COLUMNS)
   end
 
   private
 
-  def display_lists_simple(lists, column)
+  def display_simple_lists(lists, column)
     max_filename_length = lists.map { |file_info| file_info.file.length }.max
     line_count = (lists.length.to_f / column).ceil
     line_count.times do |line|
@@ -27,7 +27,7 @@ class FileList
     end
   end
 
-  def display_lists_detailed(current_files)
+  def display_lists_long_format(current_files)
     total_block_number(current_files)
     max_lengths = calculate_maximum_lengths(current_files)
     current_files.each { |file_info| display_file_details(file_info, max_lengths) }
