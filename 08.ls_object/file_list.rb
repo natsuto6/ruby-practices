@@ -11,14 +11,14 @@ class FileList
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
     files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
     current_files = @params[:r] ? files.reverse : files
-    @params[:l] ? display_lists_long_format(current_files) : display_simple_lists(current_files, COLUMNS)
+    @params[:l] ? display_lists_long_format(current_files) : display_simple_lists(current_files)
   end
 
   private
 
-  def display_simple_lists(lists, column)
+  def display_simple_lists(lists)
     max_filename_length = lists.map { |file_info| file_info.file.length }.max
-    line_count = (lists.length.to_f / column).ceil
+    line_count = (lists.length.to_f / COLUMNS).ceil
     line_count.times do |line|
       lists.each_slice(line_count) do |columns|
         print columns[line].file&.ljust(max_filename_length + 2) if columns[line]
@@ -28,12 +28,12 @@ class FileList
   end
 
   def display_lists_long_format(current_files)
-    total_block_number(current_files)
+    display_total_block_number(current_files)
     max_lengths = calculate_maximum_lengths(current_files)
     current_files.each { |file_info| display_file_details(file_info, max_lengths) }
   end
 
-  def total_block_number(current_files)
+  def display_total_block_number(current_files)
     total = current_files.sum { |file| file.stat.blocks }
     puts "total #{total}"
   end
@@ -50,20 +50,20 @@ class FileList
   end
 
   def calculate_maximum_lengths(file_stats)
-    lengths_list = file_stats.map do |file|
-      {
-        hard_link: file.hard_link.to_s.length,
-        user: file.user.length,
-        group: file.group.length,
-        filesize: file.filesize.to_s.length
-      }
+    max_lengths = {
+      hard_link: 0,
+      user: 0,
+      group: 0,
+      filesize: 0
+    }
+
+    file_stats.each do |file|
+      max_lengths[:hard_link] = [max_lengths[:hard_link], file.hard_link.to_s.length].max
+      max_lengths[:user] = [max_lengths[:user], file.user.length].max
+      max_lengths[:group] = [max_lengths[:group], file.group.length].max
+      max_lengths[:filesize] = [max_lengths[:filesize], file.filesize.to_s.length].max
     end
 
-    default_lengths = Hash.new(0)
-    lengths_list.each_with_object(default_lengths) do |lengths_hash, max_lengths|
-      lengths_hash.each do |key, value|
-        max_lengths[key] = [max_lengths[key] || 0, value].max
-      end
-    end
+    max_lengths
   end
 end
