@@ -11,12 +11,12 @@ class FileList
     file_match_option = @params[:a] ? File::FNM_DOTMATCH : 0
     files = Dir.glob('*', file_match_option).map { |file| FileInfo.new(file) }
     current_files = @params[:r] ? files.reverse : files
-    @params[:l] ? display_lists_long_format(current_files) : display_simple_lists(current_files)
+    @params[:l] ? display_in_long_format(current_files) : display_in_short_format(current_files)
   end
 
   private
 
-  def display_simple_lists(lists)
+  def display_in_short_format(lists)
     max_filename_length = lists.map { |file_info| file_info.file.length }.max
     line_count = (lists.length.to_f / COLUMNS).ceil
     line_count.times do |line|
@@ -27,7 +27,7 @@ class FileList
     end
   end
 
-  def display_lists_long_format(current_files)
+  def display_in_long_format(current_files)
     display_total_block_number(current_files)
     max_lengths = calculate_maximum_lengths(current_files)
     current_files.each { |file_info| display_file_details(file_info, max_lengths) }
@@ -46,7 +46,7 @@ class FileList
     filesize = file_info.filesize.to_s.rjust(max_lengths[:filesize])
     time = file_info.mtime.strftime('%m %d %H:%M')
     filename = file_info.file
-    puts "#{permissions}  #{hard_link} #{user}  #{group}  #{filesize} #{time} #{filename} "
+    puts "#{permissions}  #{hard_link} #{user}  #{group}  #{filesize} #{time} #{filename}"
   end
 
   def calculate_maximum_lengths(file_stats)
