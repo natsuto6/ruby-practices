@@ -21,7 +21,7 @@ class FileList
     line_count = (lists.length.to_f / COLUMNS).ceil
     line_count.times do |line|
       lists.each_slice(line_count) do |columns|
-        print columns[line].file&.ljust(max_filename_length + 2) if columns[line]
+        print columns[line]&.file&.ljust(max_filename_length + 2)
       end
       print "\n"
     end
